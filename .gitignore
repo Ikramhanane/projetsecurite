@@ -1,0 +1,18 @@
+# Fichiers temporaires Python
+__pycache__/
+*.py[cod]
+
+# Environnements virtuels
+.venv/
+venv/
+
+# Configuration locale de l'éditeur
+.vscode/
+
+# Fichiers locaux et secrets
+.env
+*.log
+
+# Fichiers système
+.DS_Store
+Thumbs.db

@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CryptoBox — Laboratoire de cryptographie</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #090e1b;
+      --panel: #111a2c;
+      --panel-soft: #152038;
+      --border: #283650;
+      --text: #edf2ff;
+      --muted: #a5b3ce;
+      --purple: #b49aff;
+      --cyan: #72e5d1;
+      --danger: #ffb5bf;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(
+          ellipse at 8% 0%,
+          #30214c 0,
+          transparent 42%
+        ),
+        radial-gradient(
+          ellipse at 95% 25%,
+          #12383e 0,
+          transparent 38%
+        ),
+        var(--background);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--cyan);
+      outline-offset: 4px;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .container {
+      width: min(1180px, calc(100% - 40px));
+      margin: auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 26px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 23px;
+      font-weight: 750;
+      letter-spacing: -1px;
+    }
+
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 43px;
+      height: 43px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #b49aff, #72e5d1);
+      color: #111827;
+      font-family: monospace;
+      font-size: 17px;
+      letter-spacing: -2px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #31524e;
+      border-radius: 30px;
+      padding: 8px 12px;
+      color: var(--cyan);
+      background: #112b2b;
+      font-size: 12px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+    }
+
+    .hero {
+      padding: 46px 0 30px;
+    }
+
+    .eyebrow {
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    h1 {
+      max-width: 800px;
+      margin: 14px 0;
+      font-size: clamp(32px, 5vw, 54px);
+      line-height: 1.12;
+      letter-spacing: -2px;
+    }
+
+    h1 span {
+      color: var(--purple);
+    }
+
+    .hero p,
+    .muted {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 225px minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 18px 45px #00000020;
+    }
+
+    .sidebar {
+      padding: 18px;
+    }
+
+    .section-label {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .algorithm {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 14px 12px;
+      color: var(--muted);
+      text-align: left;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      background: transparent;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .algorithm:hover {
+      background: var(--panel-soft);
+    }
+
+    .algorithm.active {
+      color: var(--text);
+      background: #29233f;
+      border-color: #65518f;
+    }
+
+    .algorithm .number {
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      width: 29px;
+      height: 29px;
+      border: 1px solid #45516b;
+      border-radius: 8px;
+      font-family: monospace;
+      color: var(--purple);
+    }
+
+    .algorithm strong,
+    .algorithm small {
+      display: block;
+    }
+
+    .algorithm small {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .sidebar-note {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--muted);
+    }
+
+    .editor {
+      padding: 26px;
+    }
+
+    .editor-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 22px;
+    }
+
+    h2 {
+      margin: 0 0 7px;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+
+    .description {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .small-button {
+      flex-shrink: 0;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--panel-soft);
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .small-button:hover:not(:disabled) {
+      border-color: var(--purple);
+    }
+
+    .operations {
+      display: flex;
+      gap: 5px;
+      padding: 5px;
+      margin-bottom: 25px;
+      background: #090f1d;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .operation {
+      flex: 1;
+      padding: 11px 8px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .operation.active {
+      background: #30334e;
+      color: white;
+    }
+
+    .field-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin: 20px 0 10px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .counter {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    textarea,
+    input {
+      display: block;
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #0b1221;
+      color: var(--text);
+      padding: 15px;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus,
+    input:focus {
+      border-color: var(--purple);
+    }
+
+    textarea {
+      min-height: 145px;
+      resize: vertical;
+      line-height: 1.8;
+      letter-spacing: 2px;
+      font-family: Consolas, monospace;
+    }
+
+    input {
+      font-family: Consolas, monospace;
+    }
+
+    .help {
+      margin: 8px 0 0;
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .notice {
+      margin-top: 18px;
+      padding: 13px 15px;
+      border: 1px solid #5d4d30;
+      border-radius: 10px;
+      background: #292316;
+      color: #eed4a2;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .primary {
+      flex: 1;
+      padding: 14px 20px;
+      color: #111827;
+      background: linear-gradient(110deg, #b49aff, #83e0d5);
+      border: 0;
+      border-radius: 11px;
+      font-weight: 750;
+    }
+
+    .primary:hover:not(:disabled) {
+      filter: brightness(1.08);
+    }
+
+    .secondary {
+      padding: 12px 18px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+    }
+
+    .error {
+      margin-top: 18px;
+      padding: 13px;
+      background: #351a26;
+      border: 1px solid #824151;
+      border-radius: 10px;
+      color: var(--danger);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .result-panel {
+      margin-top: 22px;
+      padding: 24px 26px;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .result-title {
+      margin: 0;
+      font-size: 14px;
+      color: var(--cyan);
+    }
+
+    .result {
+      min-height: 70px;
+      padding: 22px 0 12px;
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: var(--cyan);
+      font-family: Consolas, monospace;
+      font-size: 22px;
+      line-height: 1.7;
+      letter-spacing: 3px;
+    }
+
+    .result.placeholder {
+      color: #8390ab;
+      font-family: inherit;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    .result-meta {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .reuse {
+      margin-top: 15px;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 25px 0 30px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.8;
+    }
+
+    @media (max-width: 760px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .sidebar .section-label {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .algorithm {
+        flex: 1;
+        min-width: 140px;
+        margin: 0;
+      }
+
+      .sidebar-note {
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .editor,
+      .result-panel {
+        padding: 20px;
+      }
+
+      footer {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 440px) {
+      .container {
+        width: calc(100% - 24px);
+      }
+
+      .badge {
+        font-size: 10px;
+        padding: 7px;
+      }
+
+      .editor-heading {
+        flex-direction: column;
+      }
+
+      .operation {
+        font-size: 11px;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">&lt;/&gt;</span>
+        CryptoBox
+      </div>
+
+      <span class="badge">
+        <span class="dot" aria-hidden="true"></span>
+        TP 1 · Version locale
+      </span>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow">Laboratoire de cryptographie</div>
+
+        <h1>
+          Un message.<br>
+          <span>Trois façons de le transformer.</span>
+        </h1>
+
+        <p>
+          Explorez César, la substitution et la transposition.
+          Chiffrez, déchiffrez et expérimentez depuis une seule interface.
+        </p>
+      </section>
+
+      <div class="workspace">
+        <aside class="panel sidebar" aria-label="Choix de l'algorithme">
+          <p class="section-label">Algorithmes</p>
+
+          <button
+            type="button"
+            class="algorithm active"
+            data-algo="cesar"
+            aria-pressed="true"
+          >
+            <span class="number">01</span>
+            <span>
+              <strong>César</strong>
+              <small>Décalage de lettres</small>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="algorithm"
+            data-algo="substitution"
+            aria-pressed="false"
+          >
+            <span class="number">02</span>
+            <span>
+              <strong>Substitution</strong>
+              <small>Alphabet personnalisé</small>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="algorithm"
+            data-algo="transposition"
+            aria-pressed="false"
+          >
+            <span class="number">03</span>
+            <span>
+              <strong>Transposition</strong>
+              <small>Réorganisation en colonnes</small>
+            </span>
+          </button>
+
+          <div class="sidebar-note">
+            <strong>Conventions du TP</strong><br>
+            Lettres A à Z uniquement.<br>
+            Sans espaces ni accents.<br>
+            Algorithmes écrits en Python.
+          </div>
+        </aside>
+
+        <div>
+          <section class="panel editor">
+            <div class="editor-heading">
+              <div>
+                <h2 id="algorithm-title">Chiffrement de César</h2>
+                <p class="description" id="algorithm-description">
+                  Décalez chaque lettre de votre message dans l'alphabet.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                class="small-button"
+                id="example-button"
+              >
+                Charger un exemple
+              </button>
+            </div>
+
+            <div class="operations" aria-label="Choix de l'opération">
+              <button
+                type="button"
+                class="operation active"
+                data-operation="chiffrer"
+                aria-pressed="true"
+              >
+                Chiffrer
+              </button>
+
+              <button
+                type="button"
+                class="operation"
+                data-operation="dechiffrer"
+                aria-pressed="false"
+              >
+                Déchiffrer
+              </button>
+
+              <button
+                type="button"
+                class="operation"
+                data-operation="brute"
+                id="brute-button"
+                aria-pressed="false"
+              >
+                Force brute
+              </button>
+            </div>
+
+            <form id="crypto-form">
+              <div class="field-heading">
+                <label for="message">Votre message</label>
+                <span class="counter" id="counter">0 / 10 000</span>
+              </div>
+
+              <textarea
+                id="message"
+                name="message"
+                placeholder="SAISISSEZVOTREMESSAGE"
+                maxlength="10000"
+                spellcheck="false"
+                required
+                aria-describedby="message-help"
+              ></textarea>
+
+              <p class="help" id="message-help">
+                Saisissez le texte en majuscules.
+                Les caractères non autorisés ne sont pas supprimés silencieusement.
+              </p>
+
+              <div id="key-group">
+                <div class="field-heading">
+                  <label for="key" id="key-label">Clé de décalage</label>
+                </div>
+
+                <input
+                  id="key"
+                  name="key"
+                  type="text"
+                  placeholder="Exemple : 3"
+                  maxlength="1000"
+                  required
+                  autocomplete="off"
+                  aria-describedby="key-help"
+                >
+
+                <p class="help" id="key-help">
+                  Un entier. La valeur est ramenée modulo 26.
+                </p>
+              </div>
+
+              <div id="hint-group" hidden>
+                <div class="field-heading">
+                  <label for="hint">
+                    Fragment connu du message clair — facultatif
+                  </label>
+                </div>
+
+                <input
+                  id="hint"
+                  name="hint"
+                  type="text"
+                  placeholder="Exemple : BONJOUR"
+                  maxlength="10000"
+                  spellcheck="false"
+                  autocomplete="off"
+                >
+
+                <div class="notice">
+                  Les 25 clés seront testées. Une seule proposition sera
+                  affichée, mais elle n'est pas garantie. Un fragment
+                  connu peut aider à choisir le bon candidat.
+                </div>
+              </div>
+
+              <div class="actions">
+                <button
+                  type="submit"
+                  class="primary"
+                  id="submit-button"
+                >
+                  Chiffrer le message
+                </button>
+
+                <button
+                  type="button"
+                  class="secondary"
+                  id="clear-button"
+                >
+                  Effacer
+                </button>
+              </div>
+
+              <div id="error" class="error" role="alert" hidden></div>
+            </form>
+          </section>
+
+          <section
+            class="panel result-panel"
+            aria-labelledby="result-heading"
+          >
+            <div class="result-header">
+              <h2 class="result-title" id="result-heading">
+                Résultat
+              </h2>
+
+              <button
+                type="button"
+                class="small-button"
+                id="copy-button"
+                disabled
+              >
+                Copier
+              </button>
+            </div>
+
+            <div aria-live="polite" aria-atomic="true">
+              <pre id="result" class="result placeholder">Votre résultat apparaîtra ici.</pre>
+              <div class="result-meta" id="result-meta"></div>
+            </div>
+
+            <button
+              type="button"
+              class="small-button reuse"
+              id="reuse-button"
+              disabled
+            >
+              Utiliser ce résultat comme message
+            </button>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <span>CryptoBox · Python + HTML / CSS / JavaScript</span>
+      <span>Outil pédagogique : ne pas utiliser pour protéger des données réelles.</span>
+    </footer>
+  </div>
+
+  <script>
+    const configuration = {
+      cesar: {
+        title: "Chiffrement de César",
+        description:
+          "Décalez chaque lettre de votre message dans l'alphabet.",
+        keyLabel: "Clé de décalage",
+        keyPlaceholder: "Exemple : 3",
+        keyHelp: "Un entier. La valeur est ramenée modulo 26.",
+        exampleMessage: "BONJOUR",
+        exampleEncrypted: "ERQMRXU",
+        exampleKey: "3"
+      },
+
+      substitution: {
+        title: "Substitution alphabétique",
+        description:
+          "Remplacez chaque lettre par celle de votre alphabet secret.",
+        keyLabel: "Alphabet de substitution",
+        keyPlaceholder: "QWERTYUIOPASDFGHJKLZXCVBNM",
+        keyHelp:
+          "Les 26 lettres de A à Z, chacune présente une seule fois.",
+        exampleMessage: "ATTAQUE",
+        exampleEncrypted: "QZZQJXT",
+        exampleKey: "QWERTYUIOPASDFGHJKLZXCVBNM"
+      },
+
+      transposition: {
+        title: "Transposition par colonnes",
+        description:
+          "Réorganisez les lettres à l'aide d'un mot-clé.",
+        keyLabel: "Mot-clé",
+        keyPlaceholder: "Exemple : PORTE",
+        keyHelp:
+          "Lettres A à Z. Les colonnes sont lues dans l'ordre alphabétique.",
+        exampleMessage: "RENDEZVOUSAMIDI",
+        exampleEncrypted: "ESIEVMRZANOIDUD",
+        exampleKey: "PORTE"
+      }
+    };
+
+    const element = (id) => document.getElementById(id);
+
+    let algorithme = "cesar";
+    let operation = "chiffrer";
+    let dernierResultat = "";
+    let version = 0;
+    let enCours = false;
+
+    const message = element("message");
+    const cle = element("key");
+    const indice = element("hint");
+
+    function actualiserCompteur() {
+      element("counter").textContent =
+        message.value.length.toLocaleString("fr-FR") + " / 10 000";
+    }
+
+    function effacerErreur() {
+      element("error").hidden = true;
+      element("error").textContent = "";
+    }
+
+    function afficherErreur(texte) {
+      element("error").textContent = texte;
+      element("error").hidden = false;
+    }
+
+    function invaliderResultat() {
+      version += 1;
+      dernierResultat = "";
+
+      element("result").textContent =
+        "Votre résultat apparaîtra ici.";
+
+      element("result").classList.add("placeholder");
+      element("result-meta").textContent = "";
+      element("copy-button").disabled = true;
+      element("copy-button").textContent = "Copier";
+      element("reuse-button").disabled = true;
+
+      effacerErreur();
+    }
+
+    function actualiserInterface() {
+      const config = configuration[algorithme];
+      const forceBrute = operation === "brute";
+
+      element("algorithm-title").textContent = config.title;
+      element("algorithm-description").textContent = config.description;
+      element("key-label").textContent = config.keyLabel;
+      element("key-help").textContent = config.keyHelp;
+      cle.placeholder = config.keyPlaceholder;
+
+      element("brute-button").hidden = algorithme !== "cesar";
+
+      element("key-group").hidden = forceBrute;
+      cle.disabled = forceBrute;
+      cle.required = !forceBrute;
+
+      element("hint-group").hidden = !forceBrute;
+      indice.disabled = !forceBrute;
+
+      document.querySelectorAll("[data-algo]").forEach((bouton) => {
+        const actif = bouton.dataset.algo === algorithme;
+        bouton.classList.toggle("active", actif);
+        bouton.setAttribute("aria-pressed", String(actif));
+      });
+
+      document.querySelectorAll("[data-operation]").forEach((bouton) => {
+        const actif = bouton.dataset.operation === operation;
+        bouton.classList.toggle("active", actif);
+        bouton.setAttribute("aria-pressed", String(actif));
+      });
+
+      const libelles = {
+        chiffrer: "Chiffrer le message",
+        dechiffrer: "Déchiffrer le message",
+        brute: "Tester les 25 clés"
+      };
+
+      element("submit-button").textContent = enCours
+        ? "Calcul en cours..."
+        : libelles[operation];
+    }
+
+    document.querySelectorAll("[data-algo]").forEach((bouton) => {
+      bouton.addEventListener("click", () => {
+        const nouveau = bouton.dataset.algo;
+
+        if (nouveau === algorithme) return;
+
+        algorithme = nouveau;
+
+        if (operation === "brute" && algorithme !== "cesar") {
+          operation = "chiffrer";
+        }
+
+        cle.value = "";
+        indice.value = "";
+
+        invaliderResultat();
+        actualiserInterface();
+      });
+    });
+
+    document.querySelectorAll("[data-operation]").forEach((bouton) => {
+      bouton.addEventListener("click", () => {
+        operation = bouton.dataset.operation;
+        invaliderResultat();
+        actualiserInterface();
+      });
+    });
+
+    [message, cle, indice].forEach((champ) => {
+      champ.addEventListener("input", () => {
+        invaliderResultat();
+        actualiserCompteur();
+      });
+    });
+
+    element("example-button").addEventListener("click", () => {
+      const config = configuration[algorithme];
+
+      message.value = operation === "chiffrer"
+        ? config.exampleMessage
+        : config.exampleEncrypted;
+
+      cle.value = config.exampleKey;
+      indice.value = "";
+
+      invaliderResultat();
+      actualiserCompteur();
+    });
+
+    element("clear-button").addEventListener("click", () => {
+      message.value = "";
+      cle.value = "";
+      indice.value = "";
+
+      invaliderResultat();
+      actualiserCompteur();
+      message.focus();
+    });
+
+    element("crypto-form").addEventListener("submit", async (evenement) => {
+      evenement.preventDefault();
+
+      if (enCours) return;
+
+      invaliderResultat();
+      const versionDemande = version;
+
+      const noms = {
+        cesar: "César",
+        substitution: "Substitution",
+        transposition: "Transposition"
+      };
+
+      const nomCalcul = noms[algorithme];
+
+      enCours = true;
+      element("submit-button").disabled = true;
+      actualiserInterface();
+
+      try {
+        const reponse = await fetch("/api/calcul", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            algorithme: algorithme,
+            operation: operation,
+            message: message.value,
+            cle: cle.value,
+            indice: indice.value
+          })
+        });
+
+        const donnees = await reponse.json();
+
+        // Ne pas afficher une réponse liée à d'anciennes saisies.
+        if (versionDemande !== version) return;
+
+        if (!reponse.ok) {
+          throw new Error(donnees.erreur || "Le calcul a échoué.");
+        }
+
+        dernierResultat = donnees.resultat;
+
+        element("result").textContent = dernierResultat;
+        element("result").classList.remove("placeholder");
+
+        const informations = [
+          nomCalcul,
+          dernierResultat.length + " lettres"
+        ];
+
+        if (donnees.cle !== undefined) {
+          informations.push("Clé : " + donnees.cle);
+        }
+
+        if (donnees.essais) {
+          informations.push(donnees.essais + " clés testées");
+        }
+
+        element("result-meta").textContent =
+          informations.join(" · ") + " — " + donnees.note;
+
+        element("copy-button").disabled = false;
+        element("reuse-button").disabled = false;
+
+      } catch (erreur) {
+        if (versionDemande === version) {
+          afficherErreur(
+            erreur instanceof TypeError
+              ? "Connexion impossible. Vérifiez que app.py fonctionne et ouvrez http://127.0.0.1:8000."
+              : erreur.message
+          );
+        }
+      } finally {
+        enCours = false;
+        element("submit-button").disabled = false;
+        actualiserInterface();
+      }
+    });
+
+    element("copy-button").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(dernierResultat);
+        element("copy-button").textContent = "Copié";
+
+        setTimeout(() => {
+          element("copy-button").textContent = "Copier";
+        }, 1600);
+
+      } catch {
+        afficherErreur(
+          "Copie automatique indisponible. Sélectionnez le résultat puis utilisez Ctrl+C."
+        );
+      }
+    });
+
+    element("reuse-button").addEventListener("click", () => {
+      message.value = dernierResultat;
+      invaliderResultat();
+      actualiserCompteur();
+      message.focus();
+    });
+
+    actualiserInterface();
+    actualiserCompteur();
+  </script>
+</body>
+</html>
